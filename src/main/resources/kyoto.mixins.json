@@ -1,0 +1,39 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.kyoto.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "CrosshairMixin",
+    "DebugOverlayMixin",
+    "HudF1Mixin",
+    "MouseHandlerMixin",
+    "SkinMixin",
+    "TitleScreenMixin",
+    "WindowTitleMixin",
+    "ZoomCameraMixin",
+    "ZoomPlayerMixin",
+    "ZoomRendererMixin",
+    "EntityEventMixin",
+    "NametagFontMixin",
+    "TimeOverrideMixin",
+    "SkyColorMixin",
+    "FogColorMixin",
+    "TabBadgeMixin",
+    "ContainerScreenMixin",
+    "FreelookEntityMixin",
+    "FreelookCameraMixin",
+    "LowFireMixin",
+    "BlockOutlineMixin",
+    "LoadingOverlayMixin",
+    "ScreenSkinMixin",
+    "ListSkinMixin",
+    "HandMixin",
+    "SwingMixin",
+    "DanceModelMixin",
+    "DanceStateMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

@@ -1,0 +1,11 @@
+Poppins by Indian Type Foundry - licensed under the SIL Open Font License 1.1 (https://openfontlicense.org).
+
+Additional fonts bundled with Kyoto Client (all free to redistribute):
+- Inter (Rasmus Andersson) - SIL Open Font License 1.1
+- Lora (Cyreal) - SIL Open Font License 1.1
+- Poppins (Indian Type Foundry) - SIL Open Font License 1.1
+- DejaVu Sans / Serif / Sans Mono - Bitstream Vera / DejaVu free license
+- Liberation Sans / Serif (Red Hat) - SIL Open Font License 1.1
+- Carlito, Caladea (Google / Huerta Tipografica) - SIL Open Font License 1.1
+- GNU FreeSans - GPLv3 with font exception
+- GFS Baskerville (Greek Font Society) - SIL Open Font License 1.1

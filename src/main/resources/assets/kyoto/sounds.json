@@ -1,0 +1,498 @@
+{
+ "clicks.kyoto_hit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/kyoto_hit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.kyoto_crit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/kyoto_crit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.kyoto_kill": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/kyoto_kill",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.arcade_hit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/arcade_hit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.arcade_crit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/arcade_crit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.arcade_kill": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/arcade_kill",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.crisp_hit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/crisp_hit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.crisp_crit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/crisp_crit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.crisp_kill": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/crisp_kill",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.bubble_hit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/bubble_hit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.bubble_crit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/bubble_crit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.bubble_kill": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/bubble_kill",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.bass_hit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/bass_hit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.bass_crit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/bass_crit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.bass_kill": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/bass_kill",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.drum_hit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/drum_hit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.drum_crit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/drum_crit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.drum_kill": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/drum_kill",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.glass_hit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/glass_hit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.glass_crit": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/glass_crit",
+    "stream": false
+   }
+  ]
+ },
+ "clicks.glass_kill": {
+  "sounds": [
+   {
+    "name": "kyoto:clicks/glass_kill",
+    "stream": false
+   }
+  ]
+ },
+ "fishing.fish_bite": {
+  "sounds": [
+   {
+    "name": "kyoto:fishing/fish_bite",
+    "stream": false
+   }
+  ]
+ },
+ "fishing.fish_ping": {
+  "sounds": [
+   {
+    "name": "kyoto:fishing/fish_ping",
+    "stream": false
+   }
+  ]
+ },
+ "fishing.fish_common": {
+  "sounds": [
+   {
+    "name": "kyoto:fishing/fish_common",
+    "stream": false
+   }
+  ]
+ },
+ "fishing.fish_rare": {
+  "sounds": [
+   {
+    "name": "kyoto:fishing/fish_rare",
+    "stream": false
+   }
+  ]
+ },
+ "fishing.fish_legendary": {
+  "sounds": [
+   {
+    "name": "kyoto:fishing/fish_legendary",
+    "stream": false
+   }
+  ]
+ },
+ "fishing.fish_combo": {
+  "sounds": [
+   {
+    "name": "kyoto:fishing/fish_combo",
+    "stream": false
+   }
+  ]
+ },
+ "ui.glass_close": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/glass_close",
+    "stream": false
+   }
+  ]
+ },
+ "ui.glass_kill": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/glass_kill",
+    "stream": false
+   }
+  ]
+ },
+ "ui.glass_notify": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/glass_notify",
+    "stream": false
+   }
+  ]
+ },
+ "ui.glass_off": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/glass_off",
+    "stream": false
+   }
+  ]
+ },
+ "ui.glass_on": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/glass_on",
+    "stream": false
+   }
+  ]
+ },
+ "ui.glass_open": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/glass_open",
+    "stream": false
+   }
+  ]
+ },
+ "ui.glass_success": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/glass_success",
+    "stream": false
+   }
+  ]
+ },
+ "ui.glass_tab": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/glass_tab",
+    "stream": false
+   }
+  ]
+ },
+ "ui.sakura_close": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/sakura_close",
+    "stream": false
+   }
+  ]
+ },
+ "ui.sakura_kill": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/sakura_kill",
+    "stream": false
+   }
+  ]
+ },
+ "ui.sakura_notify": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/sakura_notify",
+    "stream": false
+   }
+  ]
+ },
+ "ui.sakura_off": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/sakura_off",
+    "stream": false
+   }
+  ]
+ },
+ "ui.sakura_on": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/sakura_on",
+    "stream": false
+   }
+  ]
+ },
+ "ui.sakura_open": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/sakura_open",
+    "stream": false
+   }
+  ]
+ },
+ "ui.sakura_success": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/sakura_success",
+    "stream": false
+   }
+  ]
+ },
+ "ui.sakura_tab": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/sakura_tab",
+    "stream": false
+   }
+  ]
+ },
+ "ui.soft_close": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/soft_close",
+    "stream": false
+   }
+  ]
+ },
+ "ui.soft_kill": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/soft_kill",
+    "stream": false
+   }
+  ]
+ },
+ "ui.soft_notify": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/soft_notify",
+    "stream": false
+   }
+  ]
+ },
+ "ui.soft_off": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/soft_off",
+    "stream": false
+   }
+  ]
+ },
+ "ui.soft_on": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/soft_on",
+    "stream": false
+   }
+  ]
+ },
+ "ui.soft_open": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/soft_open",
+    "stream": false
+   }
+  ]
+ },
+ "ui.soft_success": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/soft_success",
+    "stream": false
+   }
+  ]
+ },
+ "ui.soft_tab": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/soft_tab",
+    "stream": false
+   }
+  ]
+ },
+ "pet.chirp0": {
+  "sounds": [
+   {
+    "name": "kyoto:pet/chirp0",
+    "stream": false
+   }
+  ]
+ },
+ "pet.chirp1": {
+  "sounds": [
+   {
+    "name": "kyoto:pet/chirp1",
+    "stream": false
+   }
+  ]
+ },
+ "pet.chirp2": {
+  "sounds": [
+   {
+    "name": "kyoto:pet/chirp2",
+    "stream": false
+   }
+  ]
+ },
+ "ui.droplet_close": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/droplet_close",
+    "stream": false
+   }
+  ]
+ },
+ "ui.droplet_kill": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/droplet_kill",
+    "stream": false
+   }
+  ]
+ },
+ "ui.droplet_notify": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/droplet_notify",
+    "stream": false
+   }
+  ]
+ },
+ "ui.droplet_off": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/droplet_off",
+    "stream": false
+   }
+  ]
+ },
+ "ui.droplet_on": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/droplet_on",
+    "stream": false
+   }
+  ]
+ },
+ "ui.droplet_open": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/droplet_open",
+    "stream": false
+   }
+  ]
+ },
+ "ui.droplet_success": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/droplet_success",
+    "stream": false
+   }
+  ]
+ },
+ "ui.droplet_tab": {
+  "sounds": [
+   {
+    "name": "kyoto:ui/droplet_tab",
+    "stream": false
+   }
+  ]
+ }
+}

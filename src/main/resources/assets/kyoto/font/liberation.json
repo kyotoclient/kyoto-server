@@ -1,0 +1,22 @@
+{
+ "providers": [
+  {
+   "type": "ttf",
+   "file": "kyoto:liberation.ttf",
+   "shift": [
+    0,
+    0.5
+   ],
+   "size": 8.5,
+   "oversample": 6.0
+  },
+  {
+   "type": "reference",
+   "id": "minecraft:include/default"
+  },
+  {
+   "type": "reference",
+   "id": "minecraft:include/unifont"
+  }
+ ]
+}

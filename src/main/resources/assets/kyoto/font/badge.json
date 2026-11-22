@@ -1,0 +1,4 @@
+{"providers": [
+  {"type": "bitmap", "file": "kyoto:font/badge.png", "ascent": 7, "height": 8, "chars": [""]},
+  {"type": "bitmap", "file": "kyoto:font/badge_plus.png", "ascent": 7, "height": 8, "chars": [""]}
+]}

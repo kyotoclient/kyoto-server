@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "kyoto",
+  "version": "${version}",
+  "name": "Kyoto Client",
+  "description": "Kyoto Client - a full client that's just a Fabric mod. Painted title screens, synced lyrics in the world, video screens, friends with DMs and calls, Kyoto F3, zoom, 140+ modules.",
+  "authors": [
+    "heffm"
+  ],
+  "license": "MIT",
+  "icon": "assets/kyoto/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.kyoto.KyotoClient"
+    ],
+    "voicechat": [
+      "dev.kyoto.social.VoicePlugin"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.0",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  },
+  "mixins": [
+    "kyoto.mixins.json"
+  ],
+  "suggests": {
+    "voicechat": "*"
+  }
+}
