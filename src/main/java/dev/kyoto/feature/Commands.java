@@ -136,6 +136,7 @@ public final class Commands {
 					return 1;
 				}))
 				.then(literal("friends").executes(ctx -> open(() -> new dev.kyoto.screen.FriendsScreen(null))))
+				.then(literal("knife").executes(ctx -> { for (String l : dev.kyoto.knife.Viewmodel.status()) say(l); return 1; }))
 				.then(literal("hud").executes(ctx -> open(() -> new dev.kyoto.screen.HudEditorScreen(null))))
 				// ---------------- server packs ----------------
 				.then(literal("price").then(argument("item", StringArgumentType.greedyString())

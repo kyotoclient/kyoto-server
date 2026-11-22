@@ -44,7 +44,6 @@ public final class Viewmodel {
 
 	/** The knife picked for the item in your main hand, as {shape, finish, material} or null. */
 	private static String[] pick(LocalPlayer p) {
-		if (!Modules.on("knives")) return null;
 		var st = p.getMainHandItem();
 		if (st.isEmpty()) return null;
 		String id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(st.getItem()).getPath();
@@ -70,16 +69,69 @@ public final class Viewmodel {
 		}
 	}
 
+	private static long lastCall = 0, frames = 0, uploads = 0;
+	private static String lastError = "none";
+
+	/** For /kyoto knife: everything about why the 3D knife is or isn't showing. */
+	public static java.util.List<String> status() {
+		java.util.List<String> out = new java.util.ArrayList<>();
+		Minecraft mc = Minecraft.getInstance();
+		LocalPlayer p = mc.player;
+		out.add("Kyoto " + dev.kyoto.KyotoClient.version() + "  ·  Knives module: " + (Modules.get("knives") == null ? "missing" : Modules.on("knives") ? "on" : "OFF"));
+		if (p == null) return out;
+		var st = p.getMainHandItem();
+		String id = st.isEmpty() ? "(empty hand)" : net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(st.getItem()).getPath();
+		out.add("Holding: " + id + "  ·  knife picked: " + Knives.picks().getOrDefault(id, "none") + "  ·  all picks: " + Knives.picks());
+		String[] k = pick(p);
+		if (k != null) out.add("Model " + k[0] + ": " + (KMesh.get(k[0]) == null ? "NOT FOUND in the jar" : "loaded"));
+		out.add("First person: " + mc.options.getCameraType().isFirstPerson() + "  ·  active: " + active + "  ·  HUD calls: " + frames + "  ·  frames drawn: " + uploads);
+		out.add("Last problem: " + (told.isEmpty() || told.equals("on") ? lastError : told));
+		return out;
+	}
+	private static String told = "";
+
+	/** Tells you once, on screen, why the 3D knife isn't showing (instead of silently showing the flat sword). */
+	private static void why(String msg) {
+		if (msg.equals(told)) return;
+		told = msg;
+		dev.kyoto.hud.Notifications.push("3D knife", msg, dev.kyoto.hud.Notifications.INFO, 5000, null, "sword");
+		dev.kyoto.KyotoClient.LOG.info("[Kyoto] 3D knife: {}", msg);
+	}
+
 	public static void render(GuiGraphicsExtractor g, int sw, int sh, float partial) {
+		// called from two places (its own HUD layer and the Kyoto HUD); only draw once a frame
+		long nn = System.nanoTime();
+		if (nn - lastCall < 2_000_000L) return;
+		lastCall = nn;
+		frames++;
+		try {
+			draw(g, sw, sh, partial);
+		} catch (Throwable t) {
+			active = false;
+			why("Couldn't draw: " + t.getClass().getSimpleName() + (t.getMessage() == null ? "" : " " + t.getMessage()));
+			lastError = t.toString();
+			dev.kyoto.KyotoClient.LOG.warn("Kyoto knife view", t);
+		}
+	}
+
+	private static void draw(GuiGraphicsExtractor g, int sw, int sh, float partial) {
 		Minecraft mc = Minecraft.getInstance();
 		LocalPlayer p = mc.player;
 		String[] k = p == null ? null : pick(p);
-		boolean firstPerson = mc.options.getCameraType().isFirstPerson();
-		if (k == null || !firstPerson || p.isSpectator() || p.isInvisible() || KMesh.get(k[0]) == null) {
+		if (k == null) {
 			active = false;
 			lastKey = "";
 			return;
 		}
+		boolean firstPerson = mc.options.getCameraType().isFirstPerson();
+		if (Modules.get("knives") != null && !Modules.on("knives")) { active = false; why("Turn on Knives (Cosmetics page) to see it in 3D"); return; }
+		if (KMesh.get(k[0]) == null) { active = false; why("Knife model missing: " + k[0] + ". Re-unzip the update and rebuild"); return; }
+		if (!firstPerson || p.isSpectator() || p.isInvisible()) {
+			active = false;
+			lastKey = "";
+			return;
+		}
+		if (!told.equals("on")) { told = "on"; dev.kyoto.KyotoClient.LOG.info("[Kyoto] 3D knife on: {} {}", k[0], k[1]); }
 		active = true;
 		long now = System.currentTimeMillis();
 		long nanos = System.nanoTime();
@@ -137,7 +189,7 @@ public final class Viewmodel {
 			texH = oh;
 			ready.set(false);
 		}
-		if (ready.getAndSet(false)) tex.upload(raster.rgba);
+		if (ready.getAndSet(false)) { tex.upload(raster.rgba); uploads++; }
 		if (!busy.get()) {
 			busy.set(true);
 			// camera: Minecraft's hand uses a 70 degree view, centred on the screen
@@ -170,6 +222,7 @@ public final class Viewmodel {
 					r.resolve();
 					ready.set(true);
 				} catch (Throwable t) {
+					lastError = "renderer: " + t;
 					dev.kyoto.KyotoClient.LOG.warn("Kyoto knife view", t);
 				} finally {
 					busy.set(false);

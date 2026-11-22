@@ -27,8 +27,42 @@ public class KyotoWheel extends Screen {
 
 	private record Cat(String name, String icon, int color, List<Item> items) {}
 
-	private static final Identifier INNER = Identifier.fromNamespaceAndPath("kyoto", "textures/gui/wheel/inner6.png");
-	private static final Identifier GLOW = Identifier.fromNamespaceAndPath("kyoto", "textures/gui/wheel/glow.png");
+	/* The ring pieces are drawn in code once (smooth edges), so they never show up as missing textures. */
+	private static final java.util.Map<String, Compat.StreamTexture> TEX = new java.util.HashMap<>();
+	private static final int TS = 384;
+
+	/** kind: "inner" (6 pieces), "outer" (n pieces) or "glow". */
+	private static Identifier tex(String kind, int n) {
+		String key = kind + n;
+		Compat.StreamTexture t = TEX.get(key);
+		if (t != null) return t.id;
+		byte[] px = new byte[TS * TS * 4];
+		double r1 = kind.equals("inner") ? 0.33 : 0.655, r2 = kind.equals("inner") ? 0.6 : 0.98;
+		double half = Math.PI / Math.max(1, n), pxs = 2.0 / TS, gap = 5 * pxs / 2 * (512.0 / TS), k = 0.035;
+		for (int y = 0; y < TS; y++) {
+			for (int x = 0; x < TS; x++) {
+				double X = (x + 0.5) / TS * 2 - 1, Y = (y + 0.5) / TS * 2 - 1;
+				double R = Math.hypot(X, Y), a;
+				if (kind.equals("glow")) {
+					double v = Math.max(0, 1 - Math.abs(R - 0.8) / 0.22);
+					a = v * v;
+				} else {
+					double A = Math.atan2(X, -Y);
+					double dr = Math.max(r1 - R, R - r2), da = (Math.abs(A) - half) * R + gap;
+					double qx = dr + k, qy = da + k;
+					double d = Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - k;
+					a = Math.max(0, Math.min(1, 0.5 - d / pxs));
+				}
+				int i = (y * TS + x) * 4;
+				px[i] = px[i + 1] = px[i + 2] = (byte) 255;
+				px[i + 3] = (byte) Math.round(a * 255);
+			}
+		}
+		t = Compat.streamTexture(Identifier.fromNamespaceAndPath("kyoto", "wheel_" + key), TS, TS);
+		t.upload(px);
+		TEX.put(key, t);
+		return t.id;
+	}
 	private static int lastCat = 0;
 
 	private final int key;
@@ -127,7 +161,7 @@ public class KyotoWheel extends Screen {
 		// backdrop: dim plus a soft glow in the category colour
 		g.fillGradient(0, 0, width, height, Anim.argb(0x120A10, 0.28f * al), Anim.argb(0x120A10, 0.42f * al));
 		int gr = Math.round(R * 1.55f);
-		Compat.blitTint(g, GLOW, cx - gr, cy - gr, gr * 2, gr * 2, Anim.argb(acc, 0.35f * al));
+		Compat.blitTint(g, tex("glow", 0), cx - gr, cy - gr, gr * 2, gr * 2, Anim.argb(acc, 0.35f * al));
 
 		// where the mouse points
 		double dx = mx - cx, dy = my - cy, dist = Math.hypot(dx, dy) / R;
@@ -165,7 +199,7 @@ public class KyotoWheel extends Screen {
 			float st = Anim.easeOutBack(Anim.clamp01((now - openedAt - i * 30) / 280f));
 			float s = (0.92f + 0.08f * st) * (1 + 0.03f * catH[i]);
 			int col = on ? cats.get(i).color : Ui.mix(Ui.GLASS_LIGHT, cats.get(i).color, catH[i] * 0.4f);
-			seg(g, INNER, cx, cy, size * s, i * 60f, Anim.argb(col, (on ? 0.95f : Ui.DARK ? 0.35f : 0.7f) * al * st));
+			seg(g, tex("inner", 6), cx, cy, size * s, i * 60f, Anim.argb(col, (on ? 0.95f : Ui.DARK ? 0.35f : 0.7f) * al * st));
 			double a = Math.toRadians(i * 60f);
 			float ir = R * 0.465f;
 			int ix = Math.round(cx + (float) Math.sin(a) * ir), iy = Math.round(cy - (float) Math.cos(a) * ir);
@@ -174,7 +208,7 @@ public class KyotoWheel extends Screen {
 		}
 
 		// outer ring: what's in this category (sweeps in when you switch)
-		Identifier OUT = Identifier.fromNamespaceAndPath("kyoto", "textures/gui/wheel/outer" + Math.max(3, Math.min(10, n)) + ".png");
+		Identifier OUT = tex("outer", Math.max(3, Math.min(10, n)));
 		for (int i = 0; i < n; i++) {
 			boolean hv = i == hoverItem;
 			itemH[i] += ((hv ? 1f : 0f) - itemH[i]) * 0.25f;

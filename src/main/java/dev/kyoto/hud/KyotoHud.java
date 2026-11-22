@@ -79,6 +79,8 @@ public final class KyotoHud {
 		int w = mc.getWindow().getGuiScaledWidth();
 		int h = mc.getWindow().getGuiScaledHeight();
 		float partial = delta.getGameTimeDeltaPartialTick(false);
+		// the 3D knife (also has its own layer under the hotbar; this is the backup if that one never runs)
+		dev.kyoto.knife.Viewmodel.render(g, w, h, partial);
 		trackClicks(mc);
 
 		// World-anchored things first so the HUD sits on top of them

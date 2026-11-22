@@ -586,7 +586,7 @@ public final class Compat {
 				int i = rgba.position();
 				for (int y = 0; y < h; y++) {
 					for (int x = 0; x < w; x++, i += 4) {
-						int argb = 0xFF000000 | ((rgba.get(i) & 0xFF) << 16) | ((rgba.get(i + 1) & 0xFF) << 8) | (rgba.get(i + 2) & 0xFF);
+						int argb = ((rgba.get(i + 3) & 0xFF) << 24) | ((rgba.get(i) & 0xFF) << 16) | ((rgba.get(i + 1) & 0xFF) << 8) | (rgba.get(i + 2) & 0xFF);
 						img.setPixel(x, y, argb);
 					}
 				}
@@ -605,7 +605,7 @@ public final class Compat {
 				int i = 0;
 				for (int y = 0; y < h; y++) {
 					for (int x = 0; x < w; x++, i += 4) {
-						int argb = 0xFF000000 | ((rgba[i] & 0xFF) << 16) | ((rgba[i + 1] & 0xFF) << 8) | (rgba[i + 2] & 0xFF);
+						int argb = ((rgba[i + 3] & 0xFF) << 24) | ((rgba[i] & 0xFF) << 16) | ((rgba[i + 1] & 0xFF) << 8) | (rgba[i + 2] & 0xFF);
 						img.setPixel(x, y, argb);
 					}
 				}

@@ -34,5 +34,6 @@
   "key.kyoto.chunk_borders": "Chunk borders",
   "key.kyoto.slime_chunks": "Slime chunks",
   "key.kyoto.screenshot_studio": "Screenshot Studio",
-  "key.kyoto.quick_wheel": "Quick wheel (hold)"
+  "key.kyoto.quick_wheel": "Kyoto wheel (hold)",
+  "key.kyoto.inspect_knife": "Inspect knife"
 }
