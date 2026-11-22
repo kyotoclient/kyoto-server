@@ -21,15 +21,26 @@ public final class Knives {
 
 	public static final String[] SHAPES = {"karambit", "butterfly", "bayonet", "flip", "gut", "huntsman", "kunai", "katana"};
 	public static final String[] SHAPE_NAMES = {"Karambit", "Butterfly Knife", "Bayonet", "Flip Knife", "Gut Knife", "Huntsman Knife", "Kunai", "Sakura Katana"};
-	public static final String[] FINISHES = {"vanilla", "sakura", "fade", "doppler", "gamma", "crimson", "tiger", "night", "gold", "diamond", "darkmatter", "damascus", "digital", "molten", "nebula", "plasma", "prism"};
-	public static final String[] FINISH_NAMES = {"Vanilla", "Sakura", "Fade", "Doppler", "Gamma Doppler", "Crimson Web", "Tiger Tooth", "Night", "Gold", "Diamond", "Dark Matter", "Damascus", "Digital", "Molten", "Nebula", "Plasma", "Prism"};
-	public static final int[] FINISH_COLORS = {0xC9C9D2, 0xF7A1BC, 0xF072B0, 0x8A4CE8, 0x0FA36B, 0xB3122E, 0xE0A21E, 0x3A3F6E, 0xF5C84C, 0x9FD8FF, 0x6B2BD9, 0x8A9098, 0xE07AA0, 0xFF6A1E, 0x5B6BF0, 0x3FD8FF, 0xF0A0FF};
+	public static final String[] FINISHES = {"vanilla", "sakura", "fade", "doppler", "gamma", "crimson", "tiger", "night", "gold", "diamond", "darkmatter", "damascus", "digital", "molten", "nebula", "plasma", "prism",
+			"arctic", "woodland", "desert", "carbon", "casehardened", "slaughter", "sapphire", "ruby", "emerald", "blackpearl",
+			"galaxy", "aurora", "inferno", "glitch", "hologram", "storm", "ocean", "rainbow", "toxic", "frost"};
+	public static final String[] FINISH_NAMES = {"Vanilla", "Sakura", "Fade", "Doppler", "Gamma Doppler", "Crimson Web", "Tiger Tooth", "Night", "Gold", "Diamond", "Dark Matter", "Damascus", "Digital", "Molten", "Nebula", "Plasma", "Prism",
+			"Arctic", "Woodland", "Desert", "Carbon Fiber", "Case Hardened", "Slaughter", "Sapphire", "Ruby", "Emerald", "Black Pearl",
+			"Galaxy", "Aurora", "Inferno", "Glitch", "Hologram", "Storm", "Ocean", "Rainbow", "Toxic", "Frost"};
+	public static final int[] FINISH_COLORS = {0xC9C9D2, 0xF7A1BC, 0xF072B0, 0x8A4CE8, 0x0FA36B, 0xB3122E, 0xE0A21E, 0x3A3F6E, 0xF5C84C, 0x9FD8FF, 0x6B2BD9, 0x8A9098, 0xE07AA0, 0xFF6A1E, 0x5B6BF0, 0x3FD8FF, 0xF0A0FF,
+			0xD6E0E8, 0x5E6B34, 0xC9A66B, 0x2A2C33, 0x2C5DB8, 0xE0405A, 0x2A6AF0, 0xE01030, 0x10C060, 0x3A2A7A,
+			0xB07AFF, 0x2AF0A0, 0xFF6A1A, 0xFF2A8A, 0x9FE8FF, 0xB89AFF, 0x0F6AA8, 0xFFD24A, 0x7CFF3A, 0xBFE4F5};
 	public static final String[] ITEMS = {"wooden_sword", "stone_sword", "copper_sword", "iron_sword", "golden_sword", "diamond_sword", "netherite_sword",
 			"wooden_axe", "stone_axe", "copper_axe", "iron_axe", "golden_axe", "diamond_axe", "netherite_axe"};
 	private static final String PACK = "Kyoto Knives";
 
 	public static Map<String, String> picks() {
 		return KyotoConfig.get().knives;
+	}
+
+	/** Moving camos (they animate on the knife). */
+	public static boolean moving(int finish) {
+		return finish == 10 || (finish >= 13 && finish <= 16) || finish >= 27;
 	}
 
 	public static String material(String item) {
@@ -51,8 +62,9 @@ public final class Knives {
 		Path dir = net.fabricmc.loader.api.FabricLoader.getInstance().getGameDir().resolve("resourcepacks").resolve(PACK);
 		boolean any = !picks().isEmpty();
 		try {
-			Path tex = dir.resolve("assets/minecraft/textures/item");
-			if (Files.exists(tex)) try (var s = Files.list(tex)) { s.forEach(f -> { try { Files.delete(f); } catch (Exception ignored) { } }); }
+			Path tex = dir.resolve("assets/minecraft/textures/item"), items = dir.resolve("assets/minecraft/items");
+			for (Path d : new Path[]{tex, items})
+				if (Files.exists(d)) try (var s = Files.list(d)) { s.forEach(f -> { try { Files.delete(f); } catch (Exception ignored) { } }); }
 			if (any) {
 				Files.createDirectories(tex);
 				int fmt = packFormat();
@@ -63,6 +75,14 @@ public final class Knives {
 					String k = e.getValue();
 					if (k.endsWith("_vanilla")) k = k + "_" + material(e.getKey());
 					copy("/assets/kyoto/knives/" + k + ".png", tex.resolve(e.getKey() + ".png"));
+					// in first person Kyoto draws the 3D knife, so the flat one is hidden there (inventory + third person keep it)
+					if (dev.kyoto.module.Modules.get("knives") == null || dev.kyoto.module.Modules.on("knives")) {
+						Files.createDirectories(items);
+						String it = e.getKey();
+						Files.writeString(items.resolve(it + ".json"), "{\"model\":{\"type\":\"minecraft:select\",\"property\":\"minecraft:display_context\","
+								+ "\"cases\":[{\"when\":[\"firstperson_righthand\",\"firstperson_lefthand\"],\"model\":{\"type\":\"minecraft:empty\"}}],"
+								+ "\"fallback\":{\"type\":\"minecraft:model\",\"model\":\"minecraft:item/" + it + "\"}}}");
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -90,9 +110,15 @@ public final class Knives {
 			repo.getClass().getMethod("reload").invoke(repo);
 			List<String> ids = new ArrayList<>((Collection<String>) repo.getClass().getMethod("getSelectedIds").invoke(repo));
 			String id = "file/" + PACK;
+			boolean was = ids.contains(id);
 			ids.remove(id);
 			if (on) ids.add(id); // last = on top
 			repo.getClass().getMethod("setSelected", Collection.class).invoke(repo, ids);
+			if (was == on) {
+				// same packs as before but the files inside changed (you picked a new knife): reload so it shows right away
+				mc.reloadResourcePacks();
+				return;
+			}
 			try {
 				mc.options.getClass().getMethod("updateResourcePacks", repo.getClass()).invoke(mc.options, repo);
 				return;

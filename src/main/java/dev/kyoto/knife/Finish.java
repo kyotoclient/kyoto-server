@@ -5,7 +5,9 @@ package dev.kyoto.knife;
  * steel in each Minecraft material for "Vanilla". Gives colour, how metallic and how rough each spot is.
  */
 public final class Finish {
-	public static final String[] IDS = {"vanilla", "sakura", "fade", "doppler", "gamma", "crimson", "tiger", "night", "gold", "diamond", "darkmatter", "damascus", "digital", "molten", "nebula", "plasma", "prism"};
+	public static final String[] IDS = {"vanilla", "sakura", "fade", "doppler", "gamma", "crimson", "tiger", "night", "gold", "diamond", "darkmatter", "damascus", "digital", "molten", "nebula", "plasma", "prism",
+			"arctic", "woodland", "desert", "carbon", "casehardened", "slaughter", "sapphire", "ruby", "emerald", "blackpearl",
+			"galaxy", "aurora", "inferno", "glitch", "hologram", "storm", "ocean", "rainbow", "toxic", "frost"};
 	public static final String[] MATS = {"wooden", "stone", "copper", "iron", "golden", "diamond", "netherite"};
 
 	/** Output of {@link #sample}: r,g,b 0..1, metal 0..1, rough 0..1. */
@@ -57,12 +59,23 @@ public final class Finish {
 	 * null = still.
 	 */
 	public static float[] anim(int fin) {
+		// {slide, pulse, twinkle, colour shift, flicker, (unused), wave, glitch}
 		return switch (fin) {
-			case 10 -> new float[]{0.05f, 0.45f, 1f, 0f, 0f};
-			case 13 -> new float[]{0.035f, 0.35f, 0f, 0f, 0f};
-			case 14 -> new float[]{0.03f, 0.2f, 1f, 0f, 0f};
-			case 15 -> new float[]{0.22f, 0.2f, 0f, 0f, 1f};
-			case 16 -> new float[]{0.06f, 0f, 0.6f, 0.25f, 0f};
+			case 10 -> new float[]{0.05f, 0.45f, 1f, 0f, 0f, 0, 0, 0};
+			case 13 -> new float[]{0.035f, 0.35f, 0f, 0f, 0f, 0, 0, 0};
+			case 14 -> new float[]{0.03f, 0.2f, 1f, 0f, 0f, 0, 0, 0};
+			case 15 -> new float[]{0.22f, 0.2f, 0f, 0f, 1f, 0, 0, 0};
+			case 16 -> new float[]{0.06f, 0f, 0.6f, 0.25f, 0f, 0, 0, 0};
+			case 27 -> new float[]{0.02f, 0.15f, 1f, 0.03f, 0f, 0, 0.3f, 0};   // galaxy
+			case 28 -> new float[]{0.04f, 0.3f, 0.4f, 0.08f, 0f, 0, 1f, 0};    // aurora
+			case 29 -> new float[]{0.45f, 0.35f, 0f, 0f, 0.4f, 0, 0.6f, 0};    // inferno
+			case 30 -> new float[]{0.0f, 0f, 0f, 0f, 0f, 0, 0, 1f};            // glitch
+			case 31 -> new float[]{0.08f, 0.25f, 0f, 0.15f, 0f, 0, 0, 0.25f}; // hologram
+			case 32 -> new float[]{0.1f, 0f, 0f, 0f, 1f, 0, 0, 0};            // storm
+			case 33 -> new float[]{0.05f, 0.2f, 0.5f, 0f, 0f, 0, 1.4f, 0};     // ocean
+			case 34 -> new float[]{0.1f, 0f, 0f, 0.5f, 0f, 0, 0, 0};           // rainbow
+			case 35 -> new float[]{0.06f, 0.7f, 0.3f, 0f, 0f, 0, 0.5f, 0};     // toxic
+			case 36 -> new float[]{0.015f, 0f, 1f, 0f, 0f, 0, 0, 0};           // frost
 			default -> null;
 		};
 	}
@@ -236,8 +249,137 @@ public final class Finish {
 				metal = 1f; rough = 0.06f; glow = 0; spark = 0;
 				if (noiseP(X * 4, y * 26, 32) > 0.94f) spark = 0.7f;
 			}
+			// ---------------- more camos ----------------
+			case 17 -> { // arctic digital
+				int bx = (int) Math.floor(x * 3), by = (int) Math.floor(y * 6);
+				float n = noise(bx * 0.45f, by * 0.45f) * 0.7f + hash(bx, by) * 0.3f;
+				set(n < 0.35f ? 0x8C9AA8 : n < 0.6f ? 0xD6E0E8 : n < 0.8f ? 0xF4F8FB : 0x5E6E7E, 0.3f, 0.5f);
+			}
+			case 18 -> blobs(x, y, 0x3E4A2A, 0x5E6B34, 0x2A2118, 0x8A7A4A);   // woodland
+			case 19 -> blobs(x, y, 0xC9A66B, 0xA8834E, 0xE3CD97, 0x7A5C38);   // desert
+			case 20 -> { // carbon fibre
+				float wx = (float) Math.sin(x * 26) , wy = (float) Math.sin(y * 26);
+				boolean a2 = ((int) Math.floor(x * 8.3f) + (int) Math.floor(y * 8.3f)) % 2 == 0;
+				set(0x1A1B1F, 0.4f, 0.3f);
+				mix(0x3A3D45, (a2 ? wx : wy) * 0.5f + 0.3f);
+			}
+			case 21 -> { // case hardened: blue and gold heat patina
+				float n = fbm(x * 0.7f, y * 1.4f), m = fbm(x * 1.6f + 7, y * 2.5f);
+				set(0xB7BBC2, 0.95f, 0.2f);
+				mix(0x2C5DB8, (n - 0.4f) * 3);
+				mix(0xD9A441, (m - 0.58f) * 4);
+				mix(0x4A2E6E, (fbm(x * 2.5f + 3, y * 4) - 0.65f) * 4);
+			}
+			case 22 -> { // slaughter: pink-red swirls
+				float n = fbm(x * 0.9f + fbm(x * 0.6f, y) * 3, y * 1.5f);
+				set(0xB01A3A, 0.9f, 0.14f);
+				mix(0xF08AA8, (n - 0.45f) * 3);
+				mix(0x5A0A1A, (0.4f - n) * 3);
+			}
+			case 23 -> gem(x, y, 0x0A1A6A, 0x2A6AF0, 0x9FD0FF);   // sapphire
+			case 24 -> gem(x, y, 0x5A0010, 0xE01030, 0xFF8090);   // ruby
+			case 25 -> gem(x, y, 0x003A1E, 0x10C060, 0x9FFFC8);   // emerald
+			case 26 -> gem(x, y, 0x0A0612, 0x3A2A7A, 0xB080FF);   // black pearl
+			// moving
+			case 27 -> { // galaxy: spiral arms full of stars
+				float X = u * 8, n = fbmP(X * 0.5f + (float) Math.sin(y * 3) , y * 1.2f, 4);
+				set(0x05030C, 0.7f, 0.15f);
+				mix(0x3A1A7A, n * 1.3f);
+				mix(0xFF7AC8, (n - 0.6f) * 3);
+				mix(0x7AD8FF, (fbmP(X + 5, y * 2.2f, 8) - 0.66f) * 3.5f);
+				glow = Math.max(0, n - 0.62f) * 1.5f;
+				float st = noiseP(X * 6, y * 40, 48);
+				if (st > 0.86f) { mix(0xFFFFFF, 1); spark = (st - 0.86f) / 0.14f; }
+			}
+			case 28 -> { // aurora: green and teal curtains over night steel
+				float X = u * 8;
+				set(0x0A1420, 0.8f, 0.2f);
+				float band = (float) Math.sin(y * 6 + fbmP(X, y, 8) * 6);
+				mix(0x2AF0A0, band * 0.8f);
+				mix(0x7A4AF0, (fbmP(X * 2, y * 2 + 3, 16) - 0.6f) * 3);
+				glow = Math.max(0, band) * 0.6f;
+			}
+			case 29 -> { // inferno: flames licking up the blade
+				float X = u * 8, n = fbmP(X * 2, y * 2.5f, 16);
+				float f = n + (1 - v) * 0.5f;
+				set(0x1A0806, 0.3f, 0.6f);
+				mix(0xC0200A, (f - 0.55f) * 3);
+				mix(0xFF8A1A, (f - 0.75f) * 3);
+				mix(0xFFE27A, (f - 0.95f) * 4);
+				glow = Math.max(0, Math.min(1, (f - 0.6f) * 2));
+			}
+			case 30 -> { // glitch: neon on black, it corrupts as it moves
+				int bx = (int) Math.floor(u * 24), by = (int) Math.floor(y * 5);
+				float h = hash(bx, by);
+				set(0x0B0B10, 0.6f, 0.3f);
+				if (h > 0.7f) { mix(h > 0.86f ? 0xFF2A8A : 0x2AF0FF, 1); glow = 0.6f; }
+				else if (h > 0.55f) mix(0x2A2A3A, 1);
+			}
+			case 31 -> { // hologram: shimmering iridescent with scan lines
+				float n = fbmP(u * 8, y * 1.4f, 8), hh = n * 2 + u;
+				r = 0.5f + 0.5f * (float) Math.cos(6.2832f * hh); g = 0.5f + 0.5f * (float) Math.cos(6.2832f * (hh + 0.33f)); b = 0.5f + 0.5f * (float) Math.cos(6.2832f * (hh + 0.67f));
+				metal = 0.9f; rough = 0.08f; glow = 0; spark = 0;
+				if (((int) (u * 120)) % 3 == 0) { r *= 0.5f; g *= 0.5f; b *= 0.5f; }
+				glow = 0.25f;
+			}
+			case 32 -> { // storm: grey clouds, white-violet lightning
+				float X = u * 8;
+				set(0x2A2E38, 0.7f, 0.35f);
+				mix(0x55606E, fbmP(X, y * 1.5f, 8));
+				float bolt = 1 - Math.abs((float) Math.sin(fbmP(X * 1.5f, y * 2 + 7, 12) * 11)) * 4;
+				if (bolt > 0) { mix(bolt > 0.6f ? 0xFFFFFF : 0xB89AFF, Math.min(1, bolt * 1.4f)); glow = Math.min(1, bolt); }
+			}
+			case 33 -> { // ocean: deep blue with rolling caustics
+				float X = u * 8, n = fbmP(X, y * 2, 8);
+				set(0x05264A, 0.85f, 0.12f);
+				mix(0x0F6AA8, n * 1.4f);
+				float c = 1 - Math.abs((float) Math.sin(fbmP(X * 2 + 3, y * 3, 16) * 14)) * 5;
+				if (c > 0) { mix(0x9FF0FF, Math.min(1, c)); glow = c * 0.5f; }
+			}
+			case 34 -> { // rainbow: bright spectrum along the blade
+				float hh = u * 1.5f + y * 0.15f;
+				r = 0.5f + 0.5f * (float) Math.cos(6.2832f * hh); g = 0.5f + 0.5f * (float) Math.cos(6.2832f * (hh + 0.33f)); b = 0.5f + 0.5f * (float) Math.cos(6.2832f * (hh + 0.67f));
+				metal = 0.9f; rough = 0.1f; glow = 0.2f; spark = 0;
+			}
+			case 35 -> { // toxic: bubbling green ooze
+				float X = u * 8;
+				set(0x0A1A08, 0.4f, 0.5f);
+				float cx = X * 1.5f, cy = y * 3;
+				int ix = (int) Math.floor(cx), iy = (int) Math.floor(cy);
+				float dx = cx - ix - 0.5f, dy = cy - iy - 0.5f, d = (float) Math.sqrt(dx * dx + dy * dy);
+				float rad = 0.15f + 0.25f * hash(Math.floorMod(ix, 12), iy);
+				float n = fbmP(X, y * 1.5f, 8);
+				mix(0x3ACF1A, n * 1.3f);
+				if (d < rad) { mix(0xC8FF3A, 1 - d / rad * 0.5f); glow = 0.8f * (1 - d / rad); }
+				else glow = Math.max(0, n - 0.6f);
+			}
+			case 36 -> { // frost: ice crystals that glint
+				float X = u * 8, n = fbmP(X * 1.5f, y * 2.5f, 12);
+				set(0xBFE4F5, 0.8f, 0.15f);
+				mix(0x6AAED6, (0.5f - n) * 2);
+				float cr = 1 - Math.abs((float) Math.sin(n * 25)) * 6;
+				if (cr > 0) mix(0xFFFFFF, cr);
+				if (noiseP(X * 5, y * 32, 40) > 0.9f) spark = 0.9f;
+			}
 			default -> vanilla(mat, x, y);
 		}
+	}
+
+	/** Classic camo blobs: 4 colours in layered noise. */
+	private void blobs(float x, float y, int c0, int c1, int c2, int c3) {
+		float a = fbm(x * 0.6f, y * 1.4f), b = fbm(x * 0.9f + 9, y * 2 + 4), c = fbm(x * 1.4f + 2, y * 3 + 8);
+		set(c0, 0.2f, 0.65f);
+		if (a > 0.55f) set(c1, 0.2f, 0.65f);
+		if (b > 0.6f) set(c2, 0.2f, 0.65f);
+		if (c > 0.65f) set(c3, 0.2f, 0.65f);
+	}
+
+	/** Gem doppler: deep colour with bright swirls of the same stone. */
+	private void gem(float x, float y, int deep, int mid, int light) {
+		float n = fbm(x * 0.8f + fbm(x * 0.5f, y) * 3, y * 1.3f);
+		set(deep, 0.95f, 0.08f);
+		mix(mid, n * 1.4f);
+		mix(light, (n - 0.62f) * 4);
 	}
 
 	private void vanilla(int mat, float x, float y) {
@@ -259,7 +401,9 @@ public final class Finish {
 			case 6 -> set(0x3B2617, 0.05f, 0.5f);
 			case 8 -> set(0x2A2016, 0.1f, 0.5f);
 			case 9 -> set(0xDDE8F0, 0.2f, 0.35f);
-			case 10, 13, 14, 15 -> set(0x0E0B12, 0f, 0.55f);
+			case 10, 13, 14, 15, 27, 28, 29, 30, 32, 33, 35 -> set(0x0E0B12, 0f, 0.55f);
+			case 18, 19 -> set(0x3A3424, 0f, 0.7f);
+			case 17, 36 -> set(0xE6EEF4, 0f, 0.55f);
 			case 16 -> set(0xD9DEE6, 0.6f, 0.25f);
 			case 12 -> { int bx = (int) Math.floor(u * 20), by = (int) Math.floor(v * 4); set(hash(bx, by) > 0.5f ? 0x2A2430 : 0x6B5A66, 0f, 0.6f); }
 			case 0 -> {

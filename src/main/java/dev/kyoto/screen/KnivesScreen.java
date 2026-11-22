@@ -46,6 +46,7 @@ public class KnivesScreen extends Screen {
 		String[] p = k.split("_");
 		for (int i = 0; i < Knives.SHAPES.length; i++) if (Knives.SHAPES[i].equals(p[0])) shape = i;
 		for (int i = 0; i < Knives.FINISHES.length; i++) if (Knives.FINISHES[i].equals(p[1])) finish = i;
+		finTab = finish < 8 ? 0 : Knives.moving(finish) ? 2 : 1;
 	}
 
 	@Override
@@ -61,6 +62,7 @@ public class KnivesScreen extends Screen {
 	}
 
 	private float yawNow = 0;
+	private int finTab = 0;
 
 	private static Identifier tex(int s, int f) {
 		return Identifier.fromNamespaceAndPath("kyoto", "textures/gui/knives/" + Knives.SHAPES[s] + "_" + Knives.FINISHES[f] + ".png");
@@ -143,25 +145,45 @@ public class KnivesScreen extends Screen {
 			hits.add(new Hit(kx, ky, kx + cw, ky + chh, () -> { shape = fi; dirty = true; inspectAt = System.currentTimeMillis(); Sounds.play(Sounds.TAB); }));
 		}
 		ry += 2 * (chh + gap) + 6;
-		// ---- 3. finish ----
+		// ---- 3. finish: three tabs, each a grid of the knife in every finish ----
 		Ui.small(g, "3  FINISH", rx, ry, Anim.argb(Ui.DIM, al));
-		ry += 10;
-		x = rx;
+		String[] tabs = {"Classic", "Camos", "Moving"};
+		int tx = rx + 52;
+		for (int t = 0; t < 3; t++) {
+			int tw = Ui.widthSmall(tabs[t]) + 14;
+			boolean on = t == finTab;
+			Ui.round(g, tx, ry - 3, tx + tw, ry + 9, 6, Anim.argb(on ? acc : Ui.INK, (on ? 0.9f : 0.07f) * al));
+			Ui.small(g, tabs[t], tx + 7, ry, Anim.argb(on ? 0xFFFFFF : Ui.MUTED, al));
+			final int ft = t;
+			hits.add(new Hit(tx, ry - 3, tx + tw, ry + 9, () -> { finTab = ft; Sounds.play(Sounds.TAB); }));
+			tx += tw + 4;
+		}
+		ry += 14;
+		java.util.List<Integer> list = new java.util.ArrayList<>();
 		for (int i = 0; i < Knives.FINISHES.length; i++) {
-			if (i == 8) { x = rx; ry += 19; Ui.small(g, "CAMOS", rx, ry, Anim.argb(Ui.DIM, al)); ry += 10; }
-			if (i == 14) { x = rx; ry += 19; Ui.small(g, "MOVING CAMOS", rx, ry, Anim.argb(Ui.DIM, al)); ry += 10; }
-			String label = Knives.FINISH_NAMES[i];
-			int w = Ui.widthSmall(label) + 22;
-			if (x + w > rx2) { x = rx; ry += 17; }
-			boolean sel = i == finish;
-			float s = a("fi" + i, sel);
-			Ui.round(g, x, ry, x + w, ry + 14, 7, Anim.argb(Ui.INK, (0.06f + 0.06f * s) * al));
-			if (s > 0.01f) Ui.ring(g, x, ry, x + w, ry + 14, 7, 1.5f, Anim.argb(Knives.FINISH_COLORS[i], s * al));
-			Ui.circle(g, x + 8, ry + 7, 4, Anim.argb(Knives.FINISH_COLORS[i], al));
-			Ui.small(g, label, x + 15, ry + 4, Anim.argb(Ui.mix(Ui.MUTED, Ui.INK, s), al));
+			int grp = i < 8 ? 0 : Knives.moving(i) ? 2 : 1;
+			if (grp == finTab) list.add(i);
+		}
+		int sw = 28, cols = Math.max(1, (rx2 - rx + 4) / (sw + 4));
+		String hoverName = null;
+		for (int j = 0; j < list.size(); j++) {
+			int i = list.get(j);
+			int gx = rx + (j % cols) * (sw + 4), gy = ry + (j / cols) * (sw + 4);
+			boolean sel = i == finish, hv = Ui.inside(mx, my, gx, gy, gx + sw, gy + sw);
+			float s = a("fi" + i, sel || hv);
+			Ui.round(g, gx, gy, gx + sw, gy + sw, 7, Anim.argb(sel ? Knives.FINISH_COLORS[i] : Ui.INK, (sel ? 0.22f : 0.06f + 0.05f * s) * al));
+			if (sel) Ui.ring(g, gx, gy, gx + sw, gy + sw, 7, 1.5f, Anim.argb(Knives.FINISH_COLORS[i], al));
+			int pad = Math.round(2 - s * 2);
+			Compat.blitTint(g, tex(shape, i), gx + pad, gy + pad, sw - pad * 2, sw - pad * 2, Anim.argb(0xFFFFFF, al));
+			if (Knives.moving(i)) Ui.circle(g, gx + sw - 4, gy + 4, 2, Anim.argb(0x7CFFB0, al * (0.6f + 0.4f * (float) Math.sin(now / 300.0 + i))));
+			if (hv) hoverName = Knives.FINISH_NAMES[i];
 			final int fi = i;
-			hits.add(new Hit(x, ry, x + w, ry + 14, () -> { finish = fi; dirty = true; inspectAt = System.currentTimeMillis(); Sounds.play(Sounds.TAB); }));
-			x += w + 4;
+			hits.add(new Hit(gx, gy, gx + sw, gy + sw, () -> { finish = fi; dirty = true; inspectAt = System.currentTimeMillis(); dev.kyoto.knife.Viewmodel.previewInspect(); Sounds.play(Sounds.TAB); }));
+		}
+		if (hoverName != null) {
+			int hw = Ui.widthSmall(hoverName) + 12;
+			Ui.round(g, mx + 8, my - 16, mx + 8 + hw, my - 3, 6, Anim.argb(Ui.DARK ? 0x2A1F25 : 0xFFFFFF, 0.95f * al));
+			Ui.small(g, hoverName, mx + 14, my - 13, Anim.argb(Ui.INK, al));
 		}
 		// ---- buttons ----
 		int by = py + ph - 34;

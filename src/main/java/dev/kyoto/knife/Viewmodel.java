@@ -24,7 +24,10 @@ public final class Viewmodel {
 	private static String lastKey = "";
 	private static int lastSlot = -1;
 	private static long drawAt = 0, inspectAt = -1;
-	private static float bobPhase = 0, bobAmt = 0, swayX = 0, swayY = 0, lastYaw = Float.NaN, lastPitch = 0;
+	private static float bobPhase = 0, bobAmt = 0, swayX = 0, swayY = 0, swayVX = 0, swayVY = 0, lastYaw = Float.NaN, lastPitch = 0, land = 0, lastSwing = 0, fallV = 0;
+	private static long attackAt = -1, hitAt = -1;
+	private static int combo = 0;
+	private static boolean wasGround = true;
 	private static long lastNanos = 0;
 
 	private static KnifeRaster raster;
@@ -70,6 +73,7 @@ public final class Viewmodel {
 	}
 
 	private static long lastCall = 0, frames = 0, uploads = 0;
+	private static boolean packChecked = false;
 	private static String lastError = "none";
 
 	/** For /kyoto knife: everything about why the 3D knife is or isn't showing. */
@@ -131,6 +135,12 @@ public final class Viewmodel {
 			lastKey = "";
 			return;
 		}
+		// knives picked before this version: rebuild the pack once so the flat sword is hidden in first person
+		if (!packChecked) {
+			packChecked = true;
+			java.nio.file.Path j = net.fabricmc.loader.api.FabricLoader.getInstance().getGameDir().resolve("resourcepacks/Kyoto Knives/assets/minecraft/items/" + k[3] + ".json");
+			if (!java.nio.file.Files.exists(j)) Knives.apply();
+		}
 		if (!told.equals("on")) { told = "on"; dev.kyoto.KyotoClient.LOG.info("[Kyoto] 3D knife on: {} {}", k[0], k[1]); }
 		active = true;
 		long now = System.currentTimeMillis();
@@ -156,9 +166,18 @@ public final class Viewmodel {
 		lastYaw = yaw;
 		lastPitch = pitch;
 		float sx = Math.max(-1, Math.min(1, -dyaw * 0.01f)), sy = Math.max(-1, Math.min(1, dpitch * 0.01f));
-		swayX += (sx * 0.12f - swayX) * Math.min(1, dt * 7);
-		swayY += (sy * 0.12f - swayY) * Math.min(1, dt * 7);
-		if (Modules.opt("knives.sway") == 1) { swayX = 0; swayY = 0; }
+		// springy sway: lags behind your look, overshoots a little, settles
+		float k2 = 90f, damp = 13f;
+		swayVX += ((sx * 0.1f - swayX) * k2 - swayVX * damp) * dt;
+		swayVY += ((sy * 0.1f - swayY) * k2 - swayVY * damp) * dt;
+		swayX += swayVX * dt;
+		swayY += swayVY * dt;
+		if (Modules.opt("knives.sway") == 1) { swayX = 0; swayY = 0; swayVX = 0; swayVY = 0; }
+		// landing dip
+		if (!ground) fallV = Math.max(fallV, (float) -p.getDeltaMovement().y);
+		if (ground && !wasGround) { land = Math.min(1, 0.4f + fallV * 1.2f); fallV = 0; }
+		wasGround = ground;
+		land *= (float) Math.pow(0.02, dt);
 
 		KnifeAnim.State st = new KnifeAnim.State();
 		st.time = now % 100000 / 1000f;
@@ -168,8 +187,21 @@ public final class Viewmodel {
 			if (it > KnifeAnim.inspectLength(k[0])) inspectAt = -1;
 			else st.inspect = it;
 		}
+		// attacks: our own timing (smoother than the vanilla swing), a combo, and a hit-stop when it connects
 		float swing = Compat.swing(p, partial);
-		if (swing > 0.01f) { st.swing = swing; inspectAt = -1; }
+		if (swing > 0.01f && lastSwing <= 0.01f) {
+			combo = now - attackAt < 1100 ? combo + 1 : 0;
+			attackAt = now;
+			inspectAt = -1;
+			hitAt = mc.hitResult instanceof net.minecraft.world.phys.EntityHitResult ? now + 110 : -1;
+		}
+		lastSwing = swing;
+		if (attackAt >= 0) {
+			float at = (now - attackAt) / 430f;
+			if (at < 1) { st.swing = Math.max(0.001f, at); st.combo = combo; }
+		}
+		if (hitAt >= 0 && now >= hitAt) st.hit = (now - hitAt) / 1000f;
+		st.land = land;
 		st.bobX = (float) Math.sin(bobPhase) * bobAmt;
 		st.bobY = -Math.abs((float) Math.cos(bobPhase)) * bobAmt;
 		st.swayX = swayX;
@@ -213,12 +245,13 @@ public final class Viewmodel {
 					float[][] pose = mesh.pose();
 					KnifeAnim.build(shape, st, km, am, pose);
 					r.clear();
-					r.knife(mesh, km, pose, fin, mat);
 					if (Modules.opt("knives.arm") == 0) {
 						int aw = slim ? 3 : 4;
 						r.skinBox(skinPx, am, -aw / 2f, 0, -2, aw, 12, 4, 40, 16, 0f);
 						r.skinBox(skinPx, am, -aw / 2f, 0, -2, aw, 12, 4, 40, 32, 0.25f);
+						if (KnifeAnim.knifeOnTop(st)) r.overArm();
 					}
+					r.knife(mesh, km, pose, fin, mat);
 					r.resolve();
 					ready.set(true);
 				} catch (Throwable t) {
@@ -268,20 +301,15 @@ public final class Viewmodel {
 		float L = m.maxY - m.minY, c = (m.maxY + m.minY) / 2;
 		M4 km = new M4().translate(0, 0, -1.25f).rotZ((float) Math.toRadians(-90 + 8));
 		float[][] pose = m.pose();
-		float yaw = yawDeg;
+		boolean insp = false;
+		float it = 0;
 		if (pInspect >= 0) {
-			float t = (System.currentTimeMillis() - pInspect) / 1000f, len = KnifeAnim.inspectLength(shape);
-			if (t > len) pInspect = -1;
-			else {
-				// reuse the in-hand inspect for the moving parts, and add a showy turn
-				KnifeAnim.State st = new KnifeAnim.State();
-				st.inspect = t;
-				KnifeAnim.build(shape, st, new M4(), new M4(), pose);
-				float u = t / len;
-				yaw += (float) (Math.sin(u * Math.PI) * 180);
-			}
+			it = (System.currentTimeMillis() - pInspect) / 1000f;
+			if (it > KnifeAnim.inspectLength(shape)) pInspect = -1;
+			else insp = true;
 		}
-		km.rotY((float) Math.toRadians(yaw)).rotX((float) Math.toRadians(12)).scale(Math.min(0.85f * ow / oh, 1.6f) / L).translate(0, -c, 0);
+		km.rotY((float) Math.toRadians(yawDeg)).rotX((float) Math.toRadians(12)).scale(Math.min(0.85f * ow / oh, 1.6f) / L).translate(0, -c, 0);
+		if (insp) KnifeAnim.previewInspect(shape, it, km, pose);
 		int fin = Math.max(0, java.util.Arrays.asList(Finish.IDS).indexOf(finish));
 		int mat = Math.max(0, java.util.Arrays.asList(Finish.MATS).indexOf(Knives.material(item)));
 		pr.clear();

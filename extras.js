@@ -83,7 +83,8 @@ module.exports = function extras(ctx) {
     send(res, 200, { ok: true, wear: out });
   };
   // dance emotes (the mod animates the player model); they last longer than stickers
-  const DANCES = ['wave', 'floss', 'groove', 'robot', 'cheer', 'bow', 'hype', 'shuffle', 'spin', 'clap', 'stop'].map(d => 'dance:' + d);
+  const DANCES = ['floss', 'groove', 'robot', 'hype', 'shuffle', 'spin', 'disco', 'griddy', 'headbang', 'airguitar', 'sakura', 'kick',
+    'wave', 'cheer', 'bow', 'clap', 'dab', 'salute', 'facepalm', 'laugh', 'shrug', 'heart', 'flex', 'sit', 'stop'].map(d => 'dance:' + d);
   routes['POST /emote'] = async (req, res, body, me) => {
     const e = String(body.e || ''); if (!EMOTES.includes(e) && !DANCES.includes(e)) return fail(res, 400, 'Unknown emote');
     const last = EM.get(me); if (last && now() - last.at < 1500) return fail(res, 429, 'Slow down');

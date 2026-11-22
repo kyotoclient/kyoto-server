@@ -87,6 +87,15 @@ public final class KnifeRaster {
 		}
 	}
 
+	/** Lets what's drawn next go over the arm (for tricks that pass in front of the fingers). */
+	public void overArm() {
+		if (maxX < minX) return;
+		for (int y = minY; y <= maxY; y++) {
+			int r = y * iw;
+			for (int x = minX; x <= maxX; x++) if (grole[r + x] == 9) depth[r + x] = 1e30f;
+		}
+	}
+
 	// ---------------- arm (Minecraft skin box) ----------------
 	public void skinBox(int[] skin, M4 m, float x, float y, float z, float w, float h, float d, int u, int v, float inflate) {
 		float x0 = x - inflate, y0 = y - inflate, z0 = z - inflate, x1 = x + w + inflate, y1 = y + h + inflate, z1 = z + d + inflate;
@@ -231,13 +240,26 @@ public final class KnifeRaster {
 		float[] t = baked[Math.max(0, Math.min(4, role))];
 		float u = gu[i], v = gv[i];
 		boolean moving = anim != null && (role == 0 || role == 4);
-		if (moving) u += time * anim[0];
+		if (moving) {
+			u += time * anim[0];
+			if (anim[6] > 0) u += (float) Math.sin(time * 1.8f + v * 7) * 0.02f * anim[6]; // waves
+			if (anim[7] > 0) { // glitch: random strips jump sideways for a moment
+				int step = (int) (time * 9), row = (int) (v * 6);
+				int hh = (step * 73856093) ^ (row * 19349663);
+				hh = (hh ^ (hh >>> 13)) * 1274126177;
+				if (((hh >>> 8) & 255) < 60 * anim[7]) u += (((hh >>> 16) & 255) / 255f - 0.5f) * 0.3f;
+			}
+		}
 		int tx = (int) ((u - (float) Math.floor(u)) * Finish.BU), ty = (int) (Math.max(0, Math.min(0.999f, v)) * Finish.BV);
 		int ti = (Math.min(ty, Finish.BV - 1) * Finish.BU + Math.min(tx, Finish.BU - 1)) * 7;
 		float r = t[ti], g = t[ti + 1], b = t[ti + 2], glow = t[ti + 5], spark = t[ti + 6];
 		if (moving) {
 			float uu = gu[i];
 			if (anim[1] > 0) glow *= 1 - anim[1] * (0.5f + 0.5f * (float) Math.sin(time * 2.4f + uu * 14));
+			if (anim[7] > 0) { // glitch colour split
+				int step = (int) (time * 9);
+				if (step > 0 && ((step * 2654435761L + 977) >>> 28 & 7) == 0) { float tr = r; r = b; b = tr; glow = Math.max(glow, 0.4f); }
+			}
 			if (anim[4] > 0) { // electric flicker
 				float fl = (float) Math.sin(time * 37 + uu * 55) * (float) Math.sin(time * 23 - v * 31);
 				glow *= Math.min(1f, 0.55f + 1.8f * fl * fl);

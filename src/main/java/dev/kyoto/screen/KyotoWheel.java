@@ -69,14 +69,14 @@ public class KyotoWheel extends Screen {
 	private final List<Cat> cats = new ArrayList<>();
 	private int cat, hoverItem = -1, hoverCat = -1, lastHoverItem = -1;
 	private long openedAt, catAt;
-	private final float[] catH = new float[6], itemH = new float[10];
+	private final float[] catH = new float[8], itemH = new float[14];
 	private boolean picked = false;
 
 	public KyotoWheel(int key, boolean emotes) {
 		super(Component.literal("Kyoto wheel"));
 		this.key = key;
 		build();
-		cat = emotes ? 2 : Math.max(0, Math.min(cats.size() - 1, lastCat));
+		cat = emotes ? 3 : Math.max(0, Math.min(cats.size() - 1, lastCat));
 	}
 
 	private static Item open(String name, String icon, String desc, java.util.function.Supplier<Screen> s) {
@@ -99,11 +99,12 @@ public class KyotoWheel extends Screen {
 				open("Auras", "aura", "Particles around you", () -> new dev.kyoto.cosmetic.WardrobeScreen(null, "aura")),
 				open("Pets", "paw", "A buddy that follows you", () -> new dev.kyoto.cosmetic.WardrobeScreen(null, "pet")),
 				open("Capes & skins", "cape", "Your cape and Kyoto skin", () -> new CosmeticsScreen(null)))));
-		List<Item> em = new ArrayList<>();
+		List<Item> dn = new ArrayList<>(), em = new ArrayList<>();
 		for (int i = 0; i < Dances.IDS.length; i++) {
 			final int fi = i;
-			em.add(new Item(Dances.NAMES[i], Dances.ICONS[i], "Dance. Moving stops it", () -> Dances.play(fi)));
+			(Dances.IS_DANCE[i] ? dn : em).add(new Item(Dances.NAMES[i], Dances.ICONS[i], Dances.IS_DANCE[i] ? "Dance. Moving stops it" : "Emote. Moving stops it", () -> Dances.play(fi)));
 		}
+		cats.add(new Cat("Dances", "music", 0xFF8A5C, dn));
 		cats.add(new Cat("Emotes", "smile", 0xFFB347, em));
 		cats.add(new Cat("Friends", "friends", 0x5BC0EB, List.of(
 				open("Friends", "friends", "Who's online and where", () -> new FriendsScreen(null)),
@@ -171,7 +172,8 @@ public class KyotoWheel extends Screen {
 		hoverItem = -1;
 		int n = c.items.size();
 		if (dist > 0.3 && dist < 0.63) {
-			hoverCat = (int) Math.floor((ang + Math.PI / 6) / (Math.PI / 3)) % 6;
+			int nc = cats.size();
+			hoverCat = (int) Math.floor((ang + Math.PI / nc) / (Math.PI * 2 / nc)) % nc;
 			if (hoverCat != cat && hoverCat < cats.size()) {
 				cat = hoverCat;
 				lastCat = cat;
@@ -193,14 +195,15 @@ public class KyotoWheel extends Screen {
 
 		// inner ring: categories
 		int size = Math.round(R * 2);
-		for (int i = 0; i < 6 && i < cats.size(); i++) {
+		int ncat = cats.size();
+		for (int i = 0; i < ncat; i++) {
 			boolean on = i == cat;
 			catH[i] += ((on ? 1f : i == hoverCat ? 0.6f : 0f) - catH[i]) * 0.22f;
 			float st = Anim.easeOutBack(Anim.clamp01((now - openedAt - i * 30) / 280f));
 			float s = (0.92f + 0.08f * st) * (1 + 0.03f * catH[i]);
 			int col = on ? cats.get(i).color : Ui.mix(Ui.GLASS_LIGHT, cats.get(i).color, catH[i] * 0.4f);
-			seg(g, tex("inner", 6), cx, cy, size * s, i * 60f, Anim.argb(col, (on ? 0.95f : Ui.DARK ? 0.35f : 0.7f) * al * st));
-			double a = Math.toRadians(i * 60f);
+			seg(g, tex("inner", ncat), cx, cy, size * s, i * 360f / ncat, Anim.argb(col, (on ? 0.95f : Ui.DARK ? 0.35f : 0.7f) * al * st));
+			double a = Math.toRadians(i * 360f / ncat);
 			float ir = R * 0.465f;
 			int ix = Math.round(cx + (float) Math.sin(a) * ir), iy = Math.round(cy - (float) Math.cos(a) * ir);
 			int is = Math.round(R * 0.11f * (1 + 0.15f * catH[i]));
@@ -208,7 +211,7 @@ public class KyotoWheel extends Screen {
 		}
 
 		// outer ring: what's in this category (sweeps in when you switch)
-		Identifier OUT = tex("outer", Math.max(3, Math.min(10, n)));
+		Identifier OUT = tex("outer", Math.max(3, Math.min(12, n)));
 		for (int i = 0; i < n; i++) {
 			boolean hv = i == hoverItem;
 			itemH[i] += ((hv ? 1f : 0f) - itemH[i]) * 0.25f;
