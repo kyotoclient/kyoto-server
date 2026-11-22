@@ -66,7 +66,9 @@ module.exports = function extras(ctx) {
   };
 
   /* ================================================================ pets + emotes (seen by Kyoto players near you) ================================================================ */
-  const PETS = ['none', 'fox', 'axolotl', 'bee', 'frog', 'cat', 'ghost', 'dragon', 'slime', 'star'];
+  const PETS = ['none', 'fox', 'axolotl', 'bee', 'frog', 'cat', 'ghost', 'dragon', 'slime', 'star', 'bunny'];
+  // 3D wardrobe pieces (hat / halo / back slots) the mod draws on players
+  const WEAR = { hat: ['kasa', 'crown', 'cat_ears', 'bunny_ears', 'flower_crown', 'top_hat', 'beanie', 'goat_horns', 'sakura_horns'], halo: ['halo_gold', 'halo_sakura'], back: ['wings_sakura', 'wings_angel', 'wings_butterfly', 'backpack'] };
   const EMOTES = ['hi', 'gg', 'lol', 'love', 'cry', 'mad', 'wow', 'cool', 'sleep', 'think', 'party', 'fire', 'yes', 'no', 'w', 'l', 'clap', 'rip', 'pog', 'brb', 'gn', 'sus', 'flex', 'shy'];
   const EM = new Map(); // uuid -> { e, at }
   routes['POST /pet'] = async (req, res, body, me) => {
@@ -74,22 +76,31 @@ module.exports = function extras(ctx) {
     const u = db.users[me]; if (u) { u.pet = p === 'none' ? '' : p; u.petName = String(body.name || '').replace(/[^\w ]/g, '').slice(0, 16); save(); }
     send(res, 200, { ok: true });
   };
+  routes['POST /wear'] = async (req, res, body, me) => {
+    const out = {};
+    for (const slot of Object.keys(WEAR)) { const v = String((body.wear || {})[slot] || ''); if (WEAR[slot].includes(v)) out[slot] = v; }
+    const u = db.users[me]; if (u) { u.wear = out; save(); }
+    send(res, 200, { ok: true, wear: out });
+  };
+  // dance emotes (the mod animates the player model); they last longer than stickers
+  const DANCES = ['wave', 'floss', 'groove', 'robot', 'cheer', 'bow', 'hype', 'shuffle', 'spin', 'clap', 'stop'].map(d => 'dance:' + d);
   routes['POST /emote'] = async (req, res, body, me) => {
-    const e = String(body.e || ''); if (!EMOTES.includes(e)) return fail(res, 400, 'Unknown emote');
+    const e = String(body.e || ''); if (!EMOTES.includes(e) && !DANCES.includes(e)) return fail(res, 400, 'Unknown emote');
     const last = EM.get(me); if (last && now() - last.at < 1500) return fail(res, 429, 'Slow down');
     EM.set(me, { e, at: now() }); send(res, 200, { ok: true });
   };
   // the game sends the names of players it can see; we answer with pets + recent emotes of the ones that use Kyoto
   routes['GET /near'] = async (req, res, body, me) => {
     const names = String(q(req).get('names') || '').split(',').filter(n => /^[A-Za-z0-9_]{2,16}$/.test(n)).slice(0, 60);
-    const pets = {}, emotes = {};
+    const pets = {}, emotes = {}, wear = {};
     for (const n of names) {
       const u = byName(n); if (!u || isBanned(u)) continue;
       const usr = db.users[u] || {};
       if (usr.pet) pets[usr.name || n] = { pet: usr.pet, name: usr.petName || '' };
-      const e = EM.get(u); if (e && now() - e.at < 6000) emotes[usr.name || n] = e;
+      if (usr.wear && Object.keys(usr.wear).length) wear[usr.name || n] = usr.wear;
+      const e = EM.get(u); if (e && now() - e.at < (String(e.e || '').startsWith('dance:') ? 30000 : 6000)) emotes[usr.name || n] = e;
     }
-    send(res, 200, { pets, emotes });
+    send(res, 200, { pets, emotes, wear });
   };
   setInterval(() => { for (const [u, e] of EM) if (now() - e.at > 60000) EM.delete(u); }, 60000).unref();
 

@@ -1021,7 +1021,9 @@ routes['POST /blox/np'] = async (req, res, body) => {
 db.plus = db.plus || {};
 const KOFI_TOKEN = process.env.KOFI_TOKEN || '';
 const KOFI_URL = process.env.KOFI_URL || '';
-function isPlus(u) { const p = db.plus[u]; return !!p && (p.until === 0 || p.until > Date.now()) || isOwnerUuid(u); }
+// accounts that always have Kyoto+ (the owner's alts)
+const GIFTED_PLUS = ['hefffm'];
+function isPlus(u) { const p = db.plus[u]; return !!p && (p.until === 0 || p.until > Date.now()) || isOwnerUuid(u) || GIFTED_PLUS.includes(String(nameOf(u) || '').toLowerCase()); }
 function grantPlus(u, days, source) {
   const now = Date.now(); const cur = db.plus[u];
   const base = cur && cur.until > now ? cur.until : now;
